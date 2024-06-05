@@ -1,0 +1,42 @@
+const { ethers } = require('ethers');
+
+// Ethereum provider
+const provider = new ethers.providers.JsonRpcProvider('https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID');
+
+// Private key of the address to sweep from
+const privateKey = 'YOUR_PRIVATE_KEY';
+
+// Ethereum wallet instance
+const wallet = new ethers.Wallet(privateKey, provider);
+
+// Address to monitor for incoming transactions
+const addressToMonitor = '0xYourAddressToMonitor';
+
+// Address to transfer funds to
+const destinationAddress = '0xDestinationAddress';
+
+async function sweep() {
+    // Check for incoming transactions
+    const txCount = await provider.getTransactionCount(addressToMonitor);
+
+    if (txCount > 0) {
+        console.log(`Incoming transactions detected for address ${addressToMonitor}`);
+
+        // Get the balance of the address
+        const balance = await provider.getBalance(addressToMonitor);
+
+        // Send funds to the destination address
+        const transaction = await wallet.sendTransaction({
+            to: destinationAddress,
+            value: balance,
+        });
+
+        console.log(`Swept ${ethers.utils.formatEther(balance)} ETH to ${destinationAddress}`);
+        console.log(`Transaction hash: ${transaction.hash}`);
+    } else {
+        console.log(`No incoming transactions for address ${addressToMonitor}`);
+    }
+}
+
+// Run the sweep function every minute
+setInterval(sweep, 60000);
